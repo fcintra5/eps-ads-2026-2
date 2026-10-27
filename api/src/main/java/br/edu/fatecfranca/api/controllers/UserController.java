@@ -13,8 +13,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.edu.fatecfranca.api.dtos.UserRequest;
 import br.edu.fatecfranca.api.entities.User;
 import br.edu.fatecfranca.api.services.UserService;
+import br.edu.fatecfranca.api.dtos.UserResponse;
+import jakarta.validation.Valid;
+
+import br.edu.fatecfranca.api.dtos.LoginRequest;
+//import br.edu.fatecfranca.api.dtos.UserResponse;
+
+
 
 @RestController
 @RequestMapping("/users")
@@ -25,41 +33,60 @@ public class UserController {
     public UserController(UserService service) {
         this.service = service;
     }
+    @PostMapping("/login")
+    public ResponseEntity<UserResponse> login(
+            @Valid @RequestBody LoginRequest request) {
+
+        return service.authenticate(request)
+                .map(UserResponse::new)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .build());
+    }
 
     @PostMapping
-    public ResponseEntity<User> create(@RequestBody User user) {
-        User savedUser = service.create(user);
+   public ResponseEntity<UserResponse> create(
+           @Valid @RequestBody UserRequest request) {
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(savedUser);
-    }
+       User savedUser = service.create(request);
 
-    @GetMapping
-    public List<User> findAll() {
-        return service.findAll();
-    }
+       return ResponseEntity
+               .status(HttpStatus.CREATED)
+               .body(new UserResponse(savedUser));
+   }
+
+
+   @GetMapping
+   public List<UserResponse> findAll() {
+       return service.findAll()
+               .stream()
+               .map(UserResponse::new)
+               .toList();
+   }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> findById(@PathVariable Long id) {
-        return service.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
+   public ResponseEntity<UserResponse> findById(@PathVariable Long id) {
+       return service.findById(id)
+               .map(UserResponse::new)
+               .map(ResponseEntity::ok)
+               .orElse(ResponseEntity.notFound().build());
+   }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> update(
-            @PathVariable Long id,
-            @RequestBody User user) {
+   public ResponseEntity<UserResponse> update(
+           @PathVariable Long id,
+           @Valid @RequestBody UserRequest request) {
 
-        if (!service.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
+       if (!service.existsById(id)) {
+           return ResponseEntity.notFound().build();
+       }
 
-        user.setId(id);
+       User updatedUser = service.update(id, request);
 
-        return ResponseEntity.ok(service.update(user));
-    }
+       return ResponseEntity.ok(new UserResponse(updatedUser));
+   }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
