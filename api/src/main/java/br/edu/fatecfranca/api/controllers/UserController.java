@@ -20,7 +20,8 @@ import br.edu.fatecfranca.api.dtos.UserResponse;
 import jakarta.validation.Valid;
 
 import br.edu.fatecfranca.api.dtos.LoginRequest;
-//import br.edu.fatecfranca.api.dtos.UserResponse;
+import br.edu.fatecfranca.api.dtos.LoginResponse;
+import br.edu.fatecfranca.api.services.TokenService;
 
 
 
@@ -29,16 +30,20 @@ import br.edu.fatecfranca.api.dtos.LoginRequest;
 public class UserController {
 
     private final UserService service;
+    private final TokenService tokenService;
 
-    public UserController(UserService service) {
+    public UserController(UserService service, TokenService tokenService) {
         this.service = service;
+        this.tokenService = tokenService;
     }
     @PostMapping("/login")
-    public ResponseEntity<UserResponse> login(
+    public ResponseEntity<LoginResponse> login(
             @Valid @RequestBody LoginRequest request) {
 
         return service.authenticate(request)
-                .map(UserResponse::new)
+                .map(user -> new LoginResponse(
+                        tokenService.generate(user),
+                        new UserResponse(user)))
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity
                         .status(HttpStatus.UNAUTHORIZED)
