@@ -30,7 +30,7 @@ public class Car {
     private String color;
 
     @Column(name = "year_manufacture", nullable = false)
-    private Integer yearManufacture;
+    private Long yearManufacture;
 
     @Column(nullable = false)
     private Boolean imported;
@@ -45,7 +45,7 @@ public class Car {
     private BigDecimal sellingPrice;
 
     @ManyToOne
-    @JoinColumn(name = "customer_id", nullable = false)
+    @JoinColumn(name = "customer_id")
     private Customer customer;
 
     public Car() {
@@ -83,11 +83,11 @@ public class Car {
         this.color = color;
     }
 
-    public Integer getYearManufacture() {
+    public Long getYearManufacture() {
         return yearManufacture;
     }
 
-    public void setYearManufacture(Integer yearManufacture) {
+    public void setYearManufacture(Long yearManufacture) {
         this.yearManufacture = yearManufacture;
     }
 
@@ -121,6 +121,10 @@ public class Car {
 
     public void setSellingPrice(BigDecimal sellingPrice) {
         this.sellingPrice = sellingPrice;
+    }
+
+    public Long getCustomerId() {
+        return customer != null ? customer.getId() : null;
     }
 
     public Customer getCustomer() {
