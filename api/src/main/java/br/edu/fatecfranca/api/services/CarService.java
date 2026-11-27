@@ -1,4 +1,3 @@
-
 package br.edu.fatecfranca.api.services;
 
 import java.util.List;
@@ -9,14 +8,30 @@ import org.springframework.stereotype.Service;
 import br.edu.fatecfranca.api.dtos.CarRequest;
 import br.edu.fatecfranca.api.entities.Car;
 import br.edu.fatecfranca.api.repositories.CarRepository;
+import br.edu.fatecfranca.api.validators.ManufacturerYearValidator;
+import br.edu.fatecfranca.api.validators.RequestValidator;
+import br.edu.fatecfranca.api.validators.SaleDataValidator;
+import br.edu.fatecfranca.api.validators.UniquePlatesValidator;
 
 @Service
 public class CarService {
 
    private final CarRepository repository;
+   private final RequestValidator<CarRequest> manufacturerYearValidator;
+   private final RequestValidator<CarRequest> saleDataValidator;
+   private final RequestValidator<CarRequest> uniquePlatesValidator;
 
    public CarService(CarRepository repository) {
       this.repository = repository;
+
+      this.uniquePlatesValidator =
+         new UniquePlatesValidator(repository, null);
+
+      this.saleDataValidator =
+         new SaleDataValidator(uniquePlatesValidator);
+
+      this.manufacturerYearValidator =
+         new ManufacturerYearValidator(saleDataValidator);
    }
 
    private void copyToEntity(CarRequest request, Car car) {
@@ -32,6 +47,8 @@ public class CarService {
    }
 
    public Car create(CarRequest request) {
+      manufacturerYearValidator.validate(request, null);
+
       Car car = new Car();
       copyToEntity(request, car);
       return repository.save(car);
@@ -48,6 +65,8 @@ public class CarService {
    public Car update(Long id, CarRequest request) {
       Car car = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("Car not found with id: " + id));
+
+      manufacturerYearValidator.validate(request, id);
 
       copyToEntity(request, car);
       return repository.save(car);
