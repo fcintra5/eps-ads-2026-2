@@ -7,9 +7,13 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import br.edu.fatecfranca.api.dtos.CustomerRequest;
-import br.edu.fatecfranca.api.dtos.CustomerRequest;
 import br.edu.fatecfranca.api.entities.Customer;
 import br.edu.fatecfranca.api.repositories.CustomerRepository;
+
+import br.edu.fatecfranca.api.validators.RequestValidator;
+import br.edu.fatecfranca.api.validators.StateValidator;
+import br.edu.fatecfranca.api.validators.UniqueDocumentValidator;
+import br.edu.fatecfranca.api.validators.UniqueEmailValidator;
 
 
 @Service
@@ -17,6 +21,9 @@ public class CustomerService {
 
 
    private final CustomerRepository repository;
+   private final RequestValidator<CustomerRequest> emailValidator;
+   private final RequestValidator<CustomerRequest> documentValidator;
+   private final RequestValidator<CustomerRequest> stateValidator;
 
 
    private void copyToEntity(
@@ -39,12 +46,23 @@ public class CustomerService {
 
    public CustomerService(CustomerRepository repository) {
        this.repository = repository;
+
+       this.emailValidator =
+           new UniqueEmailValidator(repository, null);
+
+       this.documentValidator =
+           new UniqueDocumentValidator(repository, emailValidator);
+
+       this.stateValidator =
+           new StateValidator(documentValidator);
    }
 
 
    public Customer create(CustomerRequest request) {
-         Customer customer = new Customer();
-            copyToEntity(request, customer);
+       stateValidator.validate(request, null);
+
+       Customer customer = new Customer();
+       copyToEntity(request, customer);
        return repository.save(customer);
    }
 
@@ -62,6 +80,8 @@ public class CustomerService {
    public Customer update(Long id, CustomerRequest request) {
        Customer customer = repository.findById(id)
            .orElseThrow(() -> new RuntimeException("Customer not found with id: " + id));
+
+       stateValidator.validate(request, id);
 
        copyToEntity(request, customer);
        return repository.save(customer);
