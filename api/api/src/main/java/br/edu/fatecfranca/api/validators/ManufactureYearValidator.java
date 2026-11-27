@@ -17,7 +17,7 @@ public class ManufactureYearValidator extends RequestValidator<CarRequest> {
             int currentYear = Year.now().getValue();
             if (request.yearManufacture() < 1900 || request.yearManufacture() > currentYear) {
                 throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
+                    HttpStatus.CONFLICT,
                     "O ano de fabricação deve ser maior ou igual a 1900 e menor ou igual ao ano atual (" + currentYear + ")."
                 );
             }
