@@ -41,7 +41,6 @@ public record CarRequest(
    @Digits(integer = 10, fraction = 2, message = "O preço de venda deve conter no máximo 10 inteiros e 2 decimais.")
    BigDecimal sellingPrice,
 
-   @NotNull(message = "O ID do cliente é obrigatório.")
    @Positive(message = "O ID do cliente deve ser maior que zero.")
    Long customerId
 ) {}

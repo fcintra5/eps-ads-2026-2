@@ -17,7 +17,7 @@ public class SaleDataValidator extends RequestValidator<CarRequest> {
 
         if (hasDate != hasPrice) {
             throw new IllegalArgumentException(
-                    "sellingDate e sellingPrice devem ser informados juntos.");
+                    "Data e Preço devem ser informados juntos.");
         }
 
         if (hasPrice && request.sellingPrice().compareTo(BigDecimal.ZERO) <= 0) {
