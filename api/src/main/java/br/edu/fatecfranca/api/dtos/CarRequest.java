@@ -37,7 +37,6 @@ public record CarRequest(
     @PastOrPresent(message = "Quando informada, não pode estar no futuro.")
     LocalDate sellingDate,
 
-    @Positive(message = "Quando informado, deve ser maior que zero.")
     @Digits(integer = 10, fraction = 2, message = "Deve conter até 10 dígitos inteiros e 2 decimais.")
     BigDecimal sellingPrice,
 
